@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratorio - Resultados</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #eef1f6;
+        }
+
+        /* Barra URL falsa */
+        .fake-url {
+            background: #f3f3f3;
+            border-bottom: 1px solid #ccc;
+            padding: 6px 15px;
+            font-size: 13px;
+            color: #333;
+            font-family: monospace;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 210px;
+            height: 100%;
+            background: #0a4fb3;
+            color: white;
+            padding: 20px 15px;
+        }
+
+        .sidebar h2 {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: bold;
+        }
+
+        /* Contenedor principal */
+        .main {
+            margin-left: 210px;
+            padding: 20px;
+        }
+
+        /* Tarjeta principal */
+        .card {
+            background: #ffffff;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Encabezado azul */
+        .card-header {
+            background: linear-gradient(90deg, #0a4fb3, #0b6bd6);
+            color: white;
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Botones */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-light {
+            background: #f0f4ff;
+            color: #0a4fb3;
+            border: 1px solid #cfd8ff;
+        }
+
+        .btn-red {
+            background: #e53935;
+            color: white;
+        }
+
+        /* Contenido tarjeta */
+        .card-body {
+            padding: 15px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .info-item span {
+            color: #777;
+            display: block;
+            font-size: 12px;
+        }
+
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid #dcdcdc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f6fb;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .result-box {
+            background: #e9ecf3;
+            border-radius: 4px;
+            padding: 6px;
+            text-align: center;
+            color: #555;
+        }
+
+        .positive {
+            background: #dfe5f3;
+            font-weight: bold;
+        }
+
+        .textarea {
+            background: #eef1f6;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        @media(max-width: 768px){
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- URL simulada -->
+<div class="fake-url">
+    lab-degolfo.list.com.mx/resultados-paq.php?estudio=odeyMg==
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>MI<br>LABORATORIO</h2>
+</div>
+
+<!-- Contenido principal -->
+<div class="main">
+
+    <!-- Datos del Estudio Clínico -->
+    <div class="card">
+        <div class="card-header">
+            <span>Datos del Estudio Clínico</span>
+            <div class="btn-group">
+                <button class="btn btn-light">👁 Otras Consultas <strong>PRO</strong></button>
+                <button class="btn btn-red">⬇ Descarga Tu Resultado</button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span>Paciente:</span>
+                    ZYANYA YARETZI RIVERA PROMOTOR
+                </div>
+                <div class="info-item">
+                    <span>Edad:</span>
+                    17
+                </div>
+                <div class="info-item">
+                    <span>Sexo:</span>
+                    Femenino
+                </div>
+
+                <div class="info-item">
+                    <span>Folio:</span>
+                    LG20268122
+                </div>
+                <div class="info-item">
+                    <span>Fecha Entrega:</span>
+                    2026-01-09
+                </div>
+                <div class="info-item">
+                    <span>Estudios:</span>
+                    • Prueba inmunológica de embarazo en Sangre
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Datos Clínicos -->
+    <div class="card">
+        <div class="card-header">
+            <span>Datos Clínicos Prueba inmunológica de embarazo en Sangre</span>
+        </div>
+
+        <div class="card-body">
+            <table>
+                <tr>
+                    <th>ESTUDIO</th>
+                    <th>RESULTADO</th>
+                    <th>UNIDADES</th>
+                    <th>REFERENCIAS</th>
+                </tr>
+                <tr>
+                    <td>PRUEBA INMUNOLÓGICA DE EMBARAZO EN SANGRE</td>
+                    <td><div class="result-box positive">POSITIVO</div></td>
+                    <td><div class="result-box"></div></td>
+                    <td><div class="result-box"></div></td>
+                </tr>
+            </table>
+
+            <div class="textarea">
+                <strong>MÉTODO:</strong><br>
+                Inmunocromatográfico cualitativo.<br>
+                Sensibilidad: 25 mUI/ml
+            </div>
+
+            <div class="textarea">
+                <strong>OBSERVACIONES:</strong><br>
+                &nbsp;
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
