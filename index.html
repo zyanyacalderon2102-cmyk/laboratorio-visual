@@ -55,11 +55,9 @@
     button:hover { background: var(--hover-color); }
     .hidden { display: none !important; }
     
-    /* Estilos para las preguntas */
     .question { text-align: left; margin: 20px 0; }
     .question p { font-size: 1.1rem; font-weight: bold; }
     
-    /* Estilos para las opciones (más fáciles de tocar en móvil) */
     .option-label {
         display: block;
         background: #f8f9fa;
@@ -73,7 +71,6 @@
     .option-label:hover { background: #e3f2fd; border-color: var(--primary-color); }
     input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
     
-    /* Resultados */
     .correct { color: #2e7d32; font-weight: bold; }
     .incorrect { color: #c62828; font-weight: bold; }
     .review-item {
@@ -86,6 +83,17 @@
     }
     .review-item.ok { border-left-color: #2e7d32; }
     .review-item.fail { border-left-color: #c62828; }
+    
+    /* Nuevo estilo para las explicaciones */
+    .explanation {
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        font-size: 0.95rem;
+        border-left: 4px solid #ffeeba;
+    }
 </style>
 </head>
 <body>
@@ -116,66 +124,66 @@
 </div>
 
 <script>
-// ====== SISTEMA DE RACHAS GUARDADAS ======
 let day = localStorage.getItem("day") ? parseInt(localStorage.getItem("day")) : 1;
 let streak = localStorage.getItem("streak") ? parseInt(localStorage.getItem("streak")) : 0;
 
 document.getElementById("day").innerText = day;
 document.getElementById("streak").innerText = streak;
 
-// ===== VARIABLES =====
 let currentSubject = "";
 let questionIndex = 0;
 let correctCount = 0;
 let selectedQuestions = [];
 let userAnswers = [];
-let totalQuestionsForExam = 0; // Nueva variable dinámica
+let totalQuestionsForExam = 5; // <--- Hacemos el examen de 5 preguntas para que varíen al repetir
 
-// ===== BANCO DE PREGUNTAS =====
+// ===== BANCO DE PREGUNTAS CON EXPLICACIONES (exp) =====
 const bank = {
     mate:[
-        {level:"facil",q:"¿Cuánto es el 25% de 200?",o:["25","40","50","75"],a:2},
-        {level:"facil",q:"Si x + 3 = 7, el valor de x es:",o:["2","3","4","5"],a:2},
-        {level:"facil",q:"3/4 es equivalente a:",o:["0.25","0.5","0.75","1.25"],a:2},
-        {level:"media",q:"Si 5 lápices cuestan $20, ¿cuánto cuestan 8?",o:["28","30","32","35"],a:2},
-        {level:"media",q:"Resuelve: 2x - 4 = 10",o:["6","7","8","9"],a:1},
-        {level:"media",q:"Una sucesión aumenta de 3 en 3: 3, 6, 9,... ¿cuál es el siguiente?",o:["10","11","12","13"],a:2},
-        {level:"media",q:"Probabilidad de sacar cara en una moneda:",o:["0","0.25","0.5","1"],a:2},
-        {level:"dificil",q:"Si 2x + 3y = 12 y x=3, entonces y es:",o:["1","2","3","4"],a:1},
-        {level:"dificil",q:"Área de un triángulo de base 10 y altura 6:",o:["30","60","20","16"],a:0},
-        {level:"dificil",q:"Interés simple del 10% de $1000 en 1 año:",o:["50","100","150","200"],a:1}
+        {level:"facil",q:"¿Cuánto es el 25% de 200?",o:["25","40","50","75"],a:2, exp:"El 25% equivale a la cuarta parte de una cantidad. Dividimos 200 entre 4 y el resultado es 50. También puedes multiplicar 200 x 0.25."},
+        {level:"facil",q:"Si x + 3 = 7, el valor de x es:",o:["2","3","4","5"],a:2, exp:"Para despejar 'x', pasamos el 3 al otro lado restando: x = 7 - 3. Por lo tanto, x = 4."},
+        {level:"facil",q:"3/4 es equivalente a:",o:["0.25","0.5","0.75","1.25"],a:2, exp:"Para convertir una fracción a decimal, divides el numerador (3) entre el denominador (4). 3 ÷ 4 = 0.75."},
+        {level:"media",q:"Si 5 lápices cuestan $20, ¿cuánto cuestan 8?",o:["28","30","32","35"],a:2, exp:"Primero sacamos el valor unitario: 20 ÷ 5 = $4 cada lápiz. Luego multiplicamos por los 8 lápices: 8 x 4 = $32."},
+        {level:"media",q:"Resuelve: 2x - 4 = 10",o:["6","7","8","9"],a:1, exp:"Pasamos el -4 al otro lado sumando: 2x = 10 + 4 (2x = 14). Luego, el 2 pasa dividiendo: x = 14 ÷ 2. Resultado: x = 7."},
+        {level:"media",q:"Una sucesión aumenta de 3 en 3: 3, 6, 9,... ¿cuál es el siguiente?",o:["10","11","12","13"],a:2, exp:"La regla de la sucesión es sumar 3 al término anterior. 9 + 3 = 12."},
+        {level:"media",q:"Probabilidad de sacar cara en una moneda:",o:["0","0.25","0.5","1"],a:2, exp:"La probabilidad es (Casos favorables) / (Casos totales). Hay 1 cara en 2 posibles resultados (cara o cruz). 1 ÷ 2 = 0.5."},
+        {level:"dificil",q:"Si 2x + 3y = 12 y x=3, entonces y es:",o:["1","2","3","4"],a:1, exp:"Sustituimos la x: 2(3) + 3y = 12 -> 6 + 3y = 12. Pasamos el 6 restando: 3y = 6. Pasamos el 3 dividiendo: y = 6 ÷ 3. Resultado: y = 2."},
+        {level:"dificil",q:"Área de un triángulo de base 10 y altura 6:",o:["30","60","20","16"],a:0, exp:"La fórmula es (base x altura) / 2. Multiplicamos 10 x 6 = 60. Luego dividimos entre 2, lo que nos da 30."},
+        {level:"dificil",q:"Interés simple del 10% de $1000 en 1 año:",o:["50","100","150","200"],a:1, exp:"La fórmula de interés simple es I = C * r * t.  (1000 * 0.10 * 1). El 10% de 1000 es 100."}
     ],
     lectura:[
-        {level:"facil",q:"La idea principal es:",o:["Un detalle secundario","El tema central","Un ejemplo","El título del texto"],a:1},
-        {level:"facil",q:"Inferir significa:",o:["Copiar textualmente","Deducir información no explícita","Subrayar ideas","Enumerar párrafos"],a:1},
-        {level:"media",q:"Un texto que intenta convencer es de tipo:",o:["Narrativo","Argumentativo","Descriptivo","Lírico"],a:1},
-        {level:"media",q:"Un conector de contraste es:",o:["Porque","Aunque","Además","Entonces"],a:1},
-        {level:"media",q:"El propósito informativo significa:",o:["Convencer al lector","Dar a conocer hechos objetivos","Criticar una postura","Narrar una ficción"],a:1},
-        {level:"dificil",q:"Si algo no se dice de forma explícita pero se entiende, es una:",o:["Síntesis","Inferencia","Copia literal","Paráfrasis"],a:1},
-        {level:"dificil",q:"La relación causa-efecto implica:",o:["Una comparación","Un motivo y su resultado","Una opinión personal","Una ubicación espacial"],a:1},
-        {level:"dificil",q:"La conclusión generalmente se ubica en:",o:["El inicio","El desarrollo","El final","El título"],a:2}
+        {level:"facil",q:"La idea principal es:",o:["Un detalle secundario","El tema central","Un ejemplo","El título del texto"],a:1, exp:"La idea principal es el núcleo del texto, aquello de lo que se habla de forma central y que engloba el mensaje principal."},
+        {level:"facil",q:"Inferir significa:",o:["Copiar textualmente","Deducir información no explícita","Subrayar ideas","Enumerar párrafos"],a:1, exp:"Inferir es 'leer entre líneas'. Es sacar una conclusión basada en pistas del texto, aunque no esté escrito directamente."},
+        {level:"media",q:"Un texto que intenta convencer es de tipo:",o:["Narrativo","Argumentativo","Descriptivo","Lírico"],a:1, exp:"Los textos argumentativos buscan persuadir o convencer al lector sobre un punto de vista mediante razones o argumentos."},
+        {level:"media",q:"Un conector de contraste es:",o:["Porque","Aunque","Además","Entonces"],a:1, exp:"'Aunque' introduce una idea que contrasta o se opone parcialmente a la anterior (ej. Fui al cine, aunque estaba lloviendo)."},
+        {level:"media",q:"El propósito informativo significa:",o:["Convencer al lector","Dar a conocer hechos objetivos","Criticar una postura","Narrar una ficción"],a:1, exp:"Los textos informativos (como las noticias) solo buscan presentar hechos y datos reales sin emitir opiniones."},
+        {level:"dificil",q:"Si algo no se dice explícito pero se entiende, es una:",o:["Síntesis","Inferencia","Copia literal","Paráfrasis"],a:1, exp:"La inferencia es la deducción de información que está implícita en el texto."},
+        {level:"dificil",q:"La relación causa-efecto implica:",o:["Una comparación","Un motivo y su resultado","Una opinión personal","Una ubicación espacial"],a:1, exp:"Causa es por qué ocurre algo (el motivo) y el efecto es lo que ocurre (el resultado)."},
+        {level:"dificil",q:"La conclusión generalmente se ubica en:",o:["El inicio","El desarrollo","El final","El título"],a:2, exp:"La conclusión es el cierre del texto, donde se hace un resumen de las ideas principales o se da un veredicto final, siempre va al final."}
     ],
     redaccion:[
-        {level:"facil",q:"¿Cuál oración está bien escrita?",o:["El niño comio","El niño comió","El niño comío","El niño comiò"],a:1},
-        {level:"facil",q:"Uso correcto para preguntar:",o:["Porque no vienes?","¿Por qué no vienes?","Porqué no vienes?","Por que no vienes?"],a:1},
-        {level:"media",q:"Concordancia correcta:",o:["Las perro corre","Los perros corren","El perros corre","La perros corren"],a:1},
-        {level:"media",q:"Uso correcto de la coma:",o:["Hola Juan como estas","Hola, Juan, ¿cómo estás?","Hola Juan, como estas","Hola, Juan como estas"],a:1},
-        {level:"dificil",q:"Identifica la palabra esdrújula:",o:["Cantar","Camión","Lápiz","Árboles"],a:3},
-        {level:"dificil",q:"Acentuación correcta:",o:["Rapído","Rápido","Rapido","Rapiído"],a:1}
+        {level:"facil",q:"¿Cuál oración está bien escrita?",o:["El niño comio","El niño comió","El niño comío","El niño comiò"],a:1, exp:"'Comió' es una palabra aguda terminada en vocal, por lo tanto debe llevar tilde (acento ortográfico) en la última sílaba (ó)."},
+        {level:"facil",q:"Uso correcto para preguntar:",o:["Porque no vienes?","¿Por qué no vienes?","Porqué no vienes?","Por que no vienes?"],a:1, exp:"Para hacer una pregunta, se usa 'Por qué' (separado y con tilde en la e). Además, en español se usan los dos signos de interrogación (¿?)."},
+        {level:"media",q:"Concordancia correcta:",o:["Las perro corre","Los perros corren","El perros corre","La perros corren"],a:1, exp:"El artículo, el sustantivo y el verbo deben coincidir en género (masculino) y número (plural). 'Los perros corren' es la única correcta."},
+        {level:"media",q:"Uso correcto de la coma:",o:["Hola Juan como estas","Hola, Juan, ¿cómo estás?","Hola Juan, como estas","Hola, Juan como estas"],a:1, exp:"Se debe usar una coma para separar el 'vocativo' (el nombre de la persona a la que le hablamos). 'Hola, Juan' es lo correcto."},
+        {level:"dificil",q:"Identifica la palabra esdrújula:",o:["Cantar","Camión","Lápiz","Árboles"],a:3, exp:"Las esdrújulas tienen la sílaba tónica en la antepenúltima sílaba (ÁR-bo-les). Lápiz es llana, Camión es aguda y Cantar es aguda."},
+        {level:"dificil",q:"Acentuación correcta:",o:["Rapído","Rápido","Rapido","Rapiído"],a:1, exp:"'Rápido' es una palabra esdrújula (RÁ-pi-do). Todas las palabras esdrújulas llevan tilde siempre."}
     ]
 };
 
-// ===== FUNCIONES =====
 function startExam(subject){
     currentSubject = subject;
     questionIndex = 0;
     correctCount = 0;
     userAnswers = [];
 
-    // Mezclar y definir dinámicamente cuántas preguntas hay (máximo 15, o las que tenga el banco)
+    // Mezclamos TODAS las preguntas del banco
     let allQuestions = shuffle([...bank[subject]]);
-    totalQuestionsForExam = Math.min(15, allQuestions.length); 
-    selectedQuestions = allQuestions.slice(0, totalQuestionsForExam);
+    
+    // Si el banco tiene más preguntas que totalQuestionsForExam (5), toma solo 5.
+    // Así en cada intento las preguntas serán diferentes.
+    let limit = Math.min(totalQuestionsForExam, allQuestions.length); 
+    selectedQuestions = allQuestions.slice(0, limit);
 
     document.getElementById("subjects").classList.add("hidden");
     document.getElementById("exam").classList.remove("hidden");
@@ -192,7 +200,7 @@ function startExam(subject){
 }
 
 function showQuestion(){
-    document.getElementById("progressText").innerText = `Pregunta ${questionIndex + 1} de ${totalQuestionsForExam}`;
+    document.getElementById("progressText").innerText = `Pregunta ${questionIndex + 1} de ${selectedQuestions.length}`;
     
     let q = selectedQuestions[questionIndex];
     document.getElementById("questionBox").innerHTML = `
@@ -222,8 +230,7 @@ function nextQuestion(){
 
     questionIndex++;
 
-    // Verificar si ya terminamos la cantidad de preguntas dinámicas
-    if(questionIndex < totalQuestionsForExam){
+    if(questionIndex < selectedQuestions.length){
         showQuestion();
     } else {
         finishExam();
@@ -235,10 +242,10 @@ function finishExam(){
     let div = document.getElementById("results");
     div.classList.remove("hidden");
 
-    let isPerfect = correctCount === totalQuestionsForExam;
+    let isPerfect = correctCount === selectedQuestions.length;
     
     let resultHTML = `<h2>Resultado Final</h2>
-                      <p>Respuestas correctas: <strong>${correctCount} de ${totalQuestionsForExam}</strong></p>`;
+                      <p>Respuestas correctas: <strong>${correctCount} de ${selectedQuestions.length}</strong></p>`;
 
     if(isPerfect){
         streak++;
@@ -250,14 +257,13 @@ function finishExam(){
         streak = 0;
         localStorage.setItem("streak", streak);
         resultHTML += `<h3 class="incorrect">Fallaste algunas. ¡La racha vuelve a cero! 💔</h3>
-                       <p>Recuerda que necesitas un puntaje perfecto para mantener la racha.</p>`;
+                       <p>Revisa las explicaciones abajo e intenta de nuevo para pasar el día.</p>`;
     }
 
-    // Actualizar los textos de arriba
     document.getElementById("day").innerText = day;
     document.getElementById("streak").innerText = streak;
 
-    resultHTML += `<h3>Revisión de tu examen:</h3><div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">`;
+    resultHTML += `<h3>Revisión de tu examen:</h3><div style="max-height: 500px; overflow-y: auto; padding-right: 10px;">`;
 
     selectedQuestions.forEach((q, i) => {
         let isCorrect = userAnswers[i] === q.a;
@@ -274,6 +280,7 @@ function finishExam(){
                     <strong>Respuesta correcta: ${q.o[q.a]}</strong>
                     </p>
                 ` : ''}
+                <div class="explanation"><strong>Explicación:</strong> ${q.exp}</div>
             </div>`;
     });
 
