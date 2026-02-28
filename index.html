@@ -2,44 +2,120 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simulador EXANI-II UV PRO</title>
 <style>
-body{font-family:Arial;background:#f0f2f5;text-align:center}
-.container{background:white;width:90%;margin:20px auto;padding:20px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.2)}
-button{padding:10px;margin:5px;border:none;border-radius:5px;background:#1976D2;color:white;cursor:pointer}
-button:hover{background:#0d47a1}
-.hidden{display:none}
-.correct{color:green}
-.incorrect{color:red}
-.question{text-align:left;margin:15px 0}
+    :root {
+        --primary-color: #1976D2;
+        --hover-color: #0d47a1;
+        --bg-color: #f0f2f5;
+        --text-color: #333;
+    }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+    }
+    .container {
+        background: white;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 30px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-sizing: border-box;
+    }
+    h1 { color: var(--primary-color); font-size: 1.5rem; margin-top: 0;}
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    button {
+        padding: 12px 20px;
+        margin: 8px;
+        border: none;
+        border-radius: 8px;
+        background: var(--primary-color);
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+        width: 100%;
+        max-width: 250px;
+    }
+    button:hover { background: var(--hover-color); }
+    .hidden { display: none !important; }
+    
+    /* Estilos para las preguntas */
+    .question { text-align: left; margin: 20px 0; }
+    .question p { font-size: 1.1rem; font-weight: bold; }
+    
+    /* Estilos para las opciones (más fáciles de tocar en móvil) */
+    .option-label {
+        display: block;
+        background: #f8f9fa;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .option-label:hover { background: #e3f2fd; border-color: var(--primary-color); }
+    input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+    
+    /* Resultados */
+    .correct { color: #2e7d32; font-weight: bold; }
+    .incorrect { color: #c62828; font-weight: bold; }
+    .review-item {
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        text-align: left;
+        border-left: 5px solid #ccc;
+    }
+    .review-item.ok { border-left-color: #2e7d32; }
+    .review-item.fail { border-left-color: #c62828; }
 </style>
 </head>
 <body>
 
 <div class="container">
+    <h1>Simulador EXANI-II UV</h1>
+    
+    <div class="stats">
+        <span>Día: <span id="day"></span></span>
+        <span>Racha: <span id="streak">🔥</span></span>
+    </div>
 
-<h1>Simulador EXANI-II UV</h1>
-<h3>Día: <span id="day"></span></h3>
-<h3>Racha: <span id="streak"></span></h3>
+    <div id="subjects">
+        <h3>Selecciona un módulo:</h3>
+        <button onclick="startExam('lectura')">Comprensión Lectora</button>
+        <button onclick="startExam('redaccion')">Redacción Indirecta</button>
+        <button onclick="startExam('mate')">Pensamiento Matemático</button>
+    </div>
 
-<div id="subjects">
-<button onclick="startExam('lectura')">Comprensión Lectora</button>
-<button onclick="startExam('redaccion')">Redacción Indirecta</button>
-<button onclick="startExam('mate')">Pensamiento Matemático</button>
-</div>
+    <div id="exam" class="hidden">
+        <h2 id="title"></h2>
+        <h4 style="color: #666;" id="progressText"></h4>
+        <div id="questionBox"></div>
+        <button onclick="nextQuestion()">Siguiente</button>
+    </div>
 
-<div id="exam" class="hidden">
-<h2 id="title"></h2>
-<div id="questionBox"></div>
-<button onclick="nextQuestion()">Siguiente</button>
-</div>
-
-<div id="results" class="hidden"></div>
-
+    <div id="results" class="hidden"></div>
 </div>
 
 <script>
-
 // ====== SISTEMA DE RACHAS GUARDADAS ======
 let day = localStorage.getItem("day") ? parseInt(localStorage.getItem("day")) : 1;
 let streak = localStorage.getItem("streak") ? parseInt(localStorage.getItem("streak")) : 0;
@@ -48,155 +124,170 @@ document.getElementById("day").innerText = day;
 document.getElementById("streak").innerText = streak;
 
 // ===== VARIABLES =====
-let currentSubject="";
-let questionIndex=0;
-let correctCount=0;
-let selectedQuestions=[];
-let userAnswers=[];
+let currentSubject = "";
+let questionIndex = 0;
+let correctCount = 0;
+let selectedQuestions = [];
+let userAnswers = [];
+let totalQuestionsForExam = 0; // Nueva variable dinámica
 
-// ===== BANCO REALISTA =====
+// ===== BANCO DE PREGUNTAS =====
 const bank = {
-
-mate:[
-{level:"facil",q:"¿Cuánto es 25% de 200?",o:["25","40","50","75"],a:2},
-{level:"facil",q:"Si x + 3 = 7, x es:",o:["2","3","4","5"],a:2},
-{level:"facil",q:"3/4 es equivalente a:",o:["0.25","0.5","0.75","1.25"],a:2},
-{level:"media",q:"Si 5 lápices cuestan $20, ¿cuánto cuestan 8?",o:["28","30","32","35"],a:2},
-{level:"media",q:"Resuelve: 2x - 4 = 10",o:["6","7","8","9"],a:1},
-{level:"media",q:"Una sucesión aumenta de 3 en 3: 3,6,9,... ¿siguiente?",o:["10","11","12","13"],a:2},
-{level:"media",q:"Probabilidad de sacar cara en moneda:",o:["0","0.25","0.5","1"],a:2},
-{level:"dificil",q:"Si 2x + 3y = 12 y x=3, y es:",o:["1","2","3","4"],a:1},
-{level:"dificil",q:"Área de triángulo base 10 altura 6:",o:["30","60","20","16"],a:0},
-{level:"dificil",q:"Interés simple 10% de 1000 en 1 año:",o:["50","100","150","200"],a:1}
-],
-
-lectura:[
-{level:"facil",q:"Idea principal es:",o:["Detalle","Tema central","Ejemplo","Título"],a:1},
-{level:"facil",q:"Inferir es:",o:["Copiar","Deducir","Subrayar","Enumerar"],a:1},
-{level:"media",q:"Texto que intenta convencer:",o:["Narrativo","Argumentativo","Descriptivo","Lírico"],a:1},
-{level:"media",q:"Conector de contraste:",o:["Porque","Aunque","Además","Entonces"],a:1},
-{level:"media",q:"Propósito informativo significa:",o:["Convencer","Informar","Criticar","Narrar ficción"],a:1},
-{level:"dificil",q:"Si algo no se dice explícito pero se entiende es:",o:["Resumen","Inferencia","Copia","Literal"],a:1},
-{level:"dificil",q:"Relación causa-efecto implica:",o:["Comparación","Motivo y resultado","Opinión","Lugar"],a:1},
-{level:"dificil",q:"Conclusión se ubica:",o:["Inicio","Desarrollo","Final","Título"],a:2}
-],
-
-redaccion:[
-{level:"facil",q:"¿Cuál está bien escrita?",o:["El niño comio","El niño comió","El niño comío","El niño comiò"],a:1},
-{level:"facil",q:"Uso correcto:",o:["Porque no vienes?","¿Por qué no vienes?","Porqué no vienes?","Por que no vienes?"],a:1},
-{level:"media",q:"Concordancia correcta:",o:["Las perro corre","Los perros corren","El perros corre","La perros corren"],a:1},
-{level:"media",q:"Uso correcto de coma:",o:["Hola Juan como estas","Hola, Juan, ¿cómo estás?","Hola Juan, como estas","Hola, Juan como estas"],a:1},
-{level:"dificil",q:"Palabra esdrújula:",o:["Cantar","Camión","Lápiz","Árboles"],a:3},
-{level:"dificil",q:"Acentuación correcta:",o:["Rapído","Rápido","Rapido","Rapiído"],a:1}
-]
-
+    mate:[
+        {level:"facil",q:"¿Cuánto es el 25% de 200?",o:["25","40","50","75"],a:2},
+        {level:"facil",q:"Si x + 3 = 7, el valor de x es:",o:["2","3","4","5"],a:2},
+        {level:"facil",q:"3/4 es equivalente a:",o:["0.25","0.5","0.75","1.25"],a:2},
+        {level:"media",q:"Si 5 lápices cuestan $20, ¿cuánto cuestan 8?",o:["28","30","32","35"],a:2},
+        {level:"media",q:"Resuelve: 2x - 4 = 10",o:["6","7","8","9"],a:1},
+        {level:"media",q:"Una sucesión aumenta de 3 en 3: 3, 6, 9,... ¿cuál es el siguiente?",o:["10","11","12","13"],a:2},
+        {level:"media",q:"Probabilidad de sacar cara en una moneda:",o:["0","0.25","0.5","1"],a:2},
+        {level:"dificil",q:"Si 2x + 3y = 12 y x=3, entonces y es:",o:["1","2","3","4"],a:1},
+        {level:"dificil",q:"Área de un triángulo de base 10 y altura 6:",o:["30","60","20","16"],a:0},
+        {level:"dificil",q:"Interés simple del 10% de $1000 en 1 año:",o:["50","100","150","200"],a:1}
+    ],
+    lectura:[
+        {level:"facil",q:"La idea principal es:",o:["Un detalle secundario","El tema central","Un ejemplo","El título del texto"],a:1},
+        {level:"facil",q:"Inferir significa:",o:["Copiar textualmente","Deducir información no explícita","Subrayar ideas","Enumerar párrafos"],a:1},
+        {level:"media",q:"Un texto que intenta convencer es de tipo:",o:["Narrativo","Argumentativo","Descriptivo","Lírico"],a:1},
+        {level:"media",q:"Un conector de contraste es:",o:["Porque","Aunque","Además","Entonces"],a:1},
+        {level:"media",q:"El propósito informativo significa:",o:["Convencer al lector","Dar a conocer hechos objetivos","Criticar una postura","Narrar una ficción"],a:1},
+        {level:"dificil",q:"Si algo no se dice de forma explícita pero se entiende, es una:",o:["Síntesis","Inferencia","Copia literal","Paráfrasis"],a:1},
+        {level:"dificil",q:"La relación causa-efecto implica:",o:["Una comparación","Un motivo y su resultado","Una opinión personal","Una ubicación espacial"],a:1},
+        {level:"dificil",q:"La conclusión generalmente se ubica en:",o:["El inicio","El desarrollo","El final","El título"],a:2}
+    ],
+    redaccion:[
+        {level:"facil",q:"¿Cuál oración está bien escrita?",o:["El niño comio","El niño comió","El niño comío","El niño comiò"],a:1},
+        {level:"facil",q:"Uso correcto para preguntar:",o:["Porque no vienes?","¿Por qué no vienes?","Porqué no vienes?","Por que no vienes?"],a:1},
+        {level:"media",q:"Concordancia correcta:",o:["Las perro corre","Los perros corren","El perros corre","La perros corren"],a:1},
+        {level:"media",q:"Uso correcto de la coma:",o:["Hola Juan como estas","Hola, Juan, ¿cómo estás?","Hola Juan, como estas","Hola, Juan como estas"],a:1},
+        {level:"dificil",q:"Identifica la palabra esdrújula:",o:["Cantar","Camión","Lápiz","Árboles"],a:3},
+        {level:"dificil",q:"Acentuación correcta:",o:["Rapído","Rápido","Rapido","Rapiído"],a:1}
+    ]
 };
 
 // ===== FUNCIONES =====
-
 function startExam(subject){
-currentSubject=subject;
-questionIndex=0;
-correctCount=0;
-userAnswers=[];
+    currentSubject = subject;
+    questionIndex = 0;
+    correctCount = 0;
+    userAnswers = [];
 
-selectedQuestions = [...bank[subject]];
-selectedQuestions = shuffle(selectedQuestions).slice(0,15);
+    // Mezclar y definir dinámicamente cuántas preguntas hay (máximo 15, o las que tenga el banco)
+    let allQuestions = shuffle([...bank[subject]]);
+    totalQuestionsForExam = Math.min(15, allQuestions.length); 
+    selectedQuestions = allQuestions.slice(0, totalQuestionsForExam);
 
-document.getElementById("subjects").classList.add("hidden");
-document.getElementById("exam").classList.remove("hidden");
-document.getElementById("results").classList.add("hidden");
+    document.getElementById("subjects").classList.add("hidden");
+    document.getElementById("exam").classList.remove("hidden");
+    document.getElementById("results").classList.add("hidden");
 
-let titles={
-mate:"Pensamiento Matemático",
-lectura:"Comprensión Lectora",
-redaccion:"Redacción Indirecta"
-};
+    let titles = {
+        mate: "Pensamiento Matemático",
+        lectura: "Comprensión Lectora",
+        redaccion: "Redacción Indirecta"
+    };
 
-document.getElementById("title").innerText=titles[subject];
-
-showQuestion();
+    document.getElementById("title").innerText = titles[subject];
+    showQuestion();
 }
 
 function showQuestion(){
-let q=selectedQuestions[questionIndex];
-document.getElementById("questionBox").innerHTML=`
-<div class="question">
-<h3>Pregunta ${questionIndex+1}</h3>
-<p>${q.q}</p>
-${q.o.map((opt,i)=>
-`<label><input type="radio" name="option" value="${i}"> ${opt}</label><br>`
-).join("")}
-</div>`;
+    document.getElementById("progressText").innerText = `Pregunta ${questionIndex + 1} de ${totalQuestionsForExam}`;
+    
+    let q = selectedQuestions[questionIndex];
+    document.getElementById("questionBox").innerHTML = `
+        <div class="question">
+            <p>${q.q}</p>
+            ${q.o.map((opt, i) =>
+                `<label class="option-label">
+                    <input type="radio" name="option" value="${i}"> ${opt}
+                </label>`
+            ).join("")}
+        </div>`;
 }
 
 function nextQuestion(){
-let selected=document.querySelector('input[name="option"]:checked');
-if(!selected){alert("Selecciona respuesta");return;}
+    let selected = document.querySelector('input[name="option"]:checked');
+    if(!selected){
+        alert("Por favor, selecciona una respuesta antes de continuar.");
+        return;
+    }
 
-let val=parseInt(selected.value);
-userAnswers.push(val);
+    let val = parseInt(selected.value);
+    userAnswers.push(val);
 
-if(val===selectedQuestions[questionIndex].a){correctCount++;}
+    if(val === selectedQuestions[questionIndex].a){
+        correctCount++;
+    }
 
-questionIndex++;
+    questionIndex++;
 
-if(questionIndex<15){
-showQuestion();
-}else{
-finishExam();
-}
+    // Verificar si ya terminamos la cantidad de preguntas dinámicas
+    if(questionIndex < totalQuestionsForExam){
+        showQuestion();
+    } else {
+        finishExam();
+    }
 }
 
 function finishExam(){
+    document.getElementById("exam").classList.add("hidden");
+    let div = document.getElementById("results");
+    div.classList.remove("hidden");
 
-document.getElementById("exam").classList.add("hidden");
-document.getElementById("results").classList.remove("hidden");
+    let isPerfect = correctCount === totalQuestionsForExam;
+    
+    let resultHTML = `<h2>Resultado Final</h2>
+                      <p>Respuestas correctas: <strong>${correctCount} de ${totalQuestionsForExam}</strong></p>`;
 
-let div=document.getElementById("results");
-div.innerHTML=`<h2>Resultado</h2>
-<p>Correctas: ${correctCount}/15</p>`;
+    if(isPerfect){
+        streak++;
+        day++;
+        localStorage.setItem("streak", streak);
+        localStorage.setItem("day", day);
+        resultHTML += `<h3 class="correct">¡Excelente trabajo! Subes de nivel de racha 🔥</h3>`;
+    } else {
+        streak = 0;
+        localStorage.setItem("streak", streak);
+        resultHTML += `<h3 class="incorrect">Fallaste algunas. ¡La racha vuelve a cero! 💔</h3>
+                       <p>Recuerda que necesitas un puntaje perfecto para mantener la racha.</p>`;
+    }
 
-if(correctCount===15){
-streak++;
-day++;
-localStorage.setItem("streak",streak);
-localStorage.setItem("day",day);
-div.innerHTML+=`<p class="correct">¡Perfecto! Subes de día 🔥</p>`;
-}else{
-streak=0;
-localStorage.setItem("streak",streak);
-div.innerHTML+=`<p class="incorrect">No alcanzaste 15/15</p>`;
-}
+    // Actualizar los textos de arriba
+    document.getElementById("day").innerText = day;
+    document.getElementById("streak").innerText = streak;
 
-div.innerHTML+="<h3>Revisión:</h3>";
+    resultHTML += `<h3>Revisión de tu examen:</h3><div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">`;
 
-selectedQuestions.forEach((q,i)=>{
-if(userAnswers[i]===q.a){
-div.innerHTML+=`<p class="correct">Pregunta ${i+1}: Correcta</p>`;
-}else{
-div.innerHTML+=`<p class="incorrect">
-Pregunta ${i+1}: Incorrecta<br>
-Tu respuesta: ${q.o[userAnswers[i]]}<br>
-Correcta: ${q.o[q.a]}
-</p>`;
-}
-});
+    selectedQuestions.forEach((q, i) => {
+        let isCorrect = userAnswers[i] === q.a;
+        let statusClass = isCorrect ? "ok" : "fail";
+        let statusText = isCorrect ? `<span class="correct">✔ Correcta</span>` : `<span class="incorrect">✖ Incorrecta</span>`;
+        
+        resultHTML += `
+            <div class="review-item ${statusClass}">
+                <p><strong>Pregunta ${i+1}:</strong> ${q.q}</p>
+                <p>${statusText}</p>
+                ${!isCorrect ? `
+                    <p style="color:#666; font-size:0.9em;">
+                    Tu respuesta: ${q.o[userAnswers[i]]}<br>
+                    <strong>Respuesta correcta: ${q.o[q.a]}</strong>
+                    </p>
+                ` : ''}
+            </div>`;
+    });
 
-document.getElementById("day").innerText=day;
-document.getElementById("streak").innerText=streak;
-
-div.innerHTML+=`<br><button onclick="location.reload()">Volver</button>`;
+    resultHTML += `</div><br><button onclick="location.reload()">Volver al Menú Principal</button>`;
+    div.innerHTML = resultHTML;
 }
 
 function shuffle(array){
-for(let i=array.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1));
-[array[i],array[j]]=[array[j],array[i]];
+    for(let i = array.length - 1; i > 0; i--){
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
-return array;
-}
-
 </script>
 </body>
 </html>
