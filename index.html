@@ -1,300 +1,331 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador EXANI-II UV PRO</title>
-<style>
-    :root {
-        --primary-color: #1976D2;
-        --hover-color: #0d47a1;
-        --bg-color: #f0f2f5;
-        --text-color: #333;
-    }
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        text-align: center;
-        margin: 0;
-        padding: 20px;
-    }
-    .container {
-        background: white;
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 30px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        box-sizing: border-box;
-    }
-    h1 { color: var(--primary-color); font-size: 1.5rem; margin-top: 0;}
-    .stats {
-        display: flex;
-        justify-content: space-around;
-        background: #e3f2fd;
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-weight: bold;
-    }
-    button {
-        padding: 12px 20px;
-        margin: 8px;
-        border: none;
-        border-radius: 8px;
-        background: var(--primary-color);
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.3s;
-        width: 100%;
-        max-width: 250px;
-    }
-    button:hover { background: var(--hover-color); }
-    .hidden { display: none !important; }
-    
-    .question { text-align: left; margin: 20px 0; }
-    .question p { font-size: 1.1rem; font-weight: bold; }
-    
-    .option-label {
-        display: block;
-        background: #f8f9fa;
-        padding: 12px;
-        margin: 8px 0;
-        border-radius: 6px;
-        border: 1px solid #dee2e6;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .option-label:hover { background: #e3f2fd; border-color: var(--primary-color); }
-    input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
-    
-    .correct { color: #2e7d32; font-weight: bold; }
-    .incorrect { color: #c62828; font-weight: bold; }
-    .review-item {
-        background: #f8f9fa;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 8px;
-        text-align: left;
-        border-left: 5px solid #ccc;
-    }
-    .review-item.ok { border-left-color: #2e7d32; }
-    .review-item.fail { border-left-color: #c62828; }
-    
-    /* Nuevo estilo para las explicaciones */
-    .explanation {
-        background: #fff3cd;
-        color: #856404;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 0.95rem;
-        border-left: 4px solid #ffeeba;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master EXANI-II - Simulador de Alto Rendimiento</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #22c55e;
+            --error: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .streak-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #fcd34d;
+        }
+
+        h1 { font-size: 1.5rem; margin: 0; color: var(--primary); }
+
+        /* Botones de menú */
+        .menu-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-subject {
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .btn-subject:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            transform: translateY(-2px);
+        }
+
+        /* Opciones de pregunta */
+        .options-list { margin-top: 20px; }
+
+        .option-item {
+            display: block;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .option-item:hover { border-color: #cbd5e1; }
+
+        input[type="radio"] { display: none; }
+
+        /* Estados de respuesta */
+        .correct-opt { background: #dcfce7 !important; border-color: #22c55e !important; }
+        .incorrect-opt { background: #fee2e2 !important; border-color: #ef4444 !important; }
+
+        .explanation-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .hidden { display: none; }
+
+        button#action-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .review-card {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Simulador EXANI-II UV</h1>
-    
-    <div class="stats">
-        <span>Día: <span id="day"></span></span>
-        <span>Racha: <span id="streak">🔥</span></span>
+    <div class="stats-header">
+        <span>Día <span id="day-val">1</span></span>
+        <span class="streak-badge">Racha: <span id="streak-val">0</span> 🔥</span>
     </div>
 
-    <div id="subjects">
-        <h3>Selecciona un módulo:</h3>
-        <button onclick="startExam('lectura')">Comprensión Lectora</button>
-        <button onclick="startExam('redaccion')">Redacción Indirecta</button>
-        <button onclick="startExam('mate')">Pensamiento Matemático</button>
+    <div id="home-screen">
+        <h1>Simulador UV PRO</h1>
+        <p>Selecciona un módulo para comenzar tu práctica diaria:</p>
+        <div class="menu-grid">
+            <button class="btn-subject" onclick="initQuiz('mate')">
+                <strong>📐 Pensamiento Matemático</strong><br>
+                <small>Álgebra, Geometría, Estadística y Trigonometría</small>
+            </button>
+            <button class="btn-subject" onclick="initQuiz('lectura')">
+                <strong>📖 Comprensión Lectora</strong><br>
+                <small>Ámbito literario, académico y social</small>
+            </button>
+            <button class="btn-subject" onclick="initQuiz('redaccion')">
+                <strong>✍️ Redacción Indirecta</strong><br>
+                <small>Ortografía, puntuación y gramática</small>
+            </button>
+        </div>
     </div>
 
-    <div id="exam" class="hidden">
-        <h2 id="title"></h2>
-        <h4 style="color: #666;" id="progressText"></h4>
-        <div id="questionBox"></div>
-        <button onclick="nextQuestion()">Siguiente</button>
+    <div id="quiz-screen" class="hidden">
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <h3 id="question-text"></h3>
+        <div id="options-container" class="options-list"></div>
+        <div id="feedback-box" class="explanation-box"></div>
+        <button id="action-btn" onclick="handleAction()">Confirmar</button>
     </div>
 
-    <div id="results" class="hidden"></div>
+    <div id="result-screen" class="hidden">
+        <h2 id="result-title"></h2>
+        <p id="result-score"></p>
+        <div id="review-area"></div>
+        <button id="action-btn" onclick="location.reload()">Regresar al inicio</button>
+    </div>
 </div>
 
 <script>
-let day = localStorage.getItem("day") ? parseInt(localStorage.getItem("day")) : 1;
-let streak = localStorage.getItem("streak") ? parseInt(localStorage.getItem("streak")) : 0;
-
-document.getElementById("day").innerText = day;
-document.getElementById("streak").innerText = streak;
-
-let currentSubject = "";
-let questionIndex = 0;
-let correctCount = 0;
-let selectedQuestions = [];
-let userAnswers = [];
-let totalQuestionsForExam = 5; // <--- Hacemos el examen de 5 preguntas para que varíen al repetir
-
-// ===== BANCO DE PREGUNTAS CON EXPLICACIONES (exp) =====
+// --- DATOS DEL BANCO ---
 const bank = {
-    mate:[
-        {level:"facil",q:"¿Cuánto es el 25% de 200?",o:["25","40","50","75"],a:2, exp:"El 25% equivale a la cuarta parte de una cantidad. Dividimos 200 entre 4 y el resultado es 50. También puedes multiplicar 200 x 0.25."},
-        {level:"facil",q:"Si x + 3 = 7, el valor de x es:",o:["2","3","4","5"],a:2, exp:"Para despejar 'x', pasamos el 3 al otro lado restando: x = 7 - 3. Por lo tanto, x = 4."},
-        {level:"facil",q:"3/4 es equivalente a:",o:["0.25","0.5","0.75","1.25"],a:2, exp:"Para convertir una fracción a decimal, divides el numerador (3) entre el denominador (4). 3 ÷ 4 = 0.75."},
-        {level:"media",q:"Si 5 lápices cuestan $20, ¿cuánto cuestan 8?",o:["28","30","32","35"],a:2, exp:"Primero sacamos el valor unitario: 20 ÷ 5 = $4 cada lápiz. Luego multiplicamos por los 8 lápices: 8 x 4 = $32."},
-        {level:"media",q:"Resuelve: 2x - 4 = 10",o:["6","7","8","9"],a:1, exp:"Pasamos el -4 al otro lado sumando: 2x = 10 + 4 (2x = 14). Luego, el 2 pasa dividiendo: x = 14 ÷ 2. Resultado: x = 7."},
-        {level:"media",q:"Una sucesión aumenta de 3 en 3: 3, 6, 9,... ¿cuál es el siguiente?",o:["10","11","12","13"],a:2, exp:"La regla de la sucesión es sumar 3 al término anterior. 9 + 3 = 12."},
-        {level:"media",q:"Probabilidad de sacar cara en una moneda:",o:["0","0.25","0.5","1"],a:2, exp:"La probabilidad es (Casos favorables) / (Casos totales). Hay 1 cara en 2 posibles resultados (cara o cruz). 1 ÷ 2 = 0.5."},
-        {level:"dificil",q:"Si 2x + 3y = 12 y x=3, entonces y es:",o:["1","2","3","4"],a:1, exp:"Sustituimos la x: 2(3) + 3y = 12 -> 6 + 3y = 12. Pasamos el 6 restando: 3y = 6. Pasamos el 3 dividiendo: y = 6 ÷ 3. Resultado: y = 2."},
-        {level:"dificil",q:"Área de un triángulo de base 10 y altura 6:",o:["30","60","20","16"],a:0, exp:"La fórmula es (base x altura) / 2. Multiplicamos 10 x 6 = 60. Luego dividimos entre 2, lo que nos da 30."},
-        {level:"dificil",q:"Interés simple del 10% de $1000 en 1 año:",o:["50","100","150","200"],a:1, exp:"La fórmula de interés simple es I = C * r * t.  (1000 * 0.10 * 1). El 10% de 1000 es 100."}
+    mate: [
+        {q: "Resuelve el sistema 2x2: x+y=5, x-y=1. ¿Cuánto vale x?", o: ["2", "3", "4", "1"], a: 1, exp: "Método de suma: (x+y) + (x-y) = 5+1 -> 2x = 6 -> x = 3."},
+        {q: "Simplifica: (x³)² / x²", o: ["x³", "x⁴", "x⁵", "x⁶"], a: 1, exp: "Potencia de potencia: (x³)² = x⁶. División: x⁶ / x² = x⁴ (6-2=4)."},
+        {q: "Un ángulo de un triángulo rectángulo mide 30°. ¿Cuánto mide el otro ángulo agudo?", o: ["30°", "45°", "60°", "90°"], a: 2, exp: "La suma de los ángulos agudos en un triángulo rectángulo es 90°. 90 - 30 = 60."},
+        {q: "Si el diámetro de un círculo es 10, ¿cuál es su área?", o: ["10π", "25π", "100π", "5π"], a: 1, exp: "Radio = 5. Área = π * r² = π * 5² = 25π."},
+        {q: "Leyes de signos: (-5) * (-2) + (-3)", o: ["7", "13", "-13", "-7"], a: 0, exp: "(-5)*(-2) = 10 positivo. 10 - 3 = 7."},
+        {q: "¿Cuál es la mediana de: 2, 8, 3, 7, 5?", o: ["3", "5", "7", "8"], a: 1, exp: "Ordenamos: 2, 3, 5, 7, 8. El valor central es 5."},
+        {q: "Factoriza x² + 5x + 6:", o: ["(x+1)(x+6)", "(x+2)(x+3)", "(x-2)(x-3)", "x(x+5)"], a: 1, exp: "Buscamos números que sumen 5 y multipliquen 6: 2 y 3."},
+        {q: "Valor de la hipotenusa si catetos son 6 y 8:", o: ["10", "12", "14", "100"], a: 0, exp: "√(6²+8²) = √(36+64) = √100 = 10."},
+        {q: "Seno(30°) es igual a:", o: ["0.5", "0.86", "1", "0.70"], a: 0, exp: "El seno de 30 grados es exactamente 1/2 o 0.5."},
+        {q: "¿Cuál es el 15% de 200?", o: ["20", "25", "30", "35"], a: 2, exp: "200 * 0.15 = 30."}
     ],
-    lectura:[
-        {level:"facil",q:"La idea principal es:",o:["Un detalle secundario","El tema central","Un ejemplo","El título del texto"],a:1, exp:"La idea principal es el núcleo del texto, aquello de lo que se habla de forma central y que engloba el mensaje principal."},
-        {level:"facil",q:"Inferir significa:",o:["Copiar textualmente","Deducir información no explícita","Subrayar ideas","Enumerar párrafos"],a:1, exp:"Inferir es 'leer entre líneas'. Es sacar una conclusión basada en pistas del texto, aunque no esté escrito directamente."},
-        {level:"media",q:"Un texto que intenta convencer es de tipo:",o:["Narrativo","Argumentativo","Descriptivo","Lírico"],a:1, exp:"Los textos argumentativos buscan persuadir o convencer al lector sobre un punto de vista mediante razones o argumentos."},
-        {level:"media",q:"Un conector de contraste es:",o:["Porque","Aunque","Además","Entonces"],a:1, exp:"'Aunque' introduce una idea que contrasta o se opone parcialmente a la anterior (ej. Fui al cine, aunque estaba lloviendo)."},
-        {level:"media",q:"El propósito informativo significa:",o:["Convencer al lector","Dar a conocer hechos objetivos","Criticar una postura","Narrar una ficción"],a:1, exp:"Los textos informativos (como las noticias) solo buscan presentar hechos y datos reales sin emitir opiniones."},
-        {level:"dificil",q:"Si algo no se dice explícito pero se entiende, es una:",o:["Síntesis","Inferencia","Copia literal","Paráfrasis"],a:1, exp:"La inferencia es la deducción de información que está implícita en el texto."},
-        {level:"dificil",q:"La relación causa-efecto implica:",o:["Una comparación","Un motivo y su resultado","Una opinión personal","Una ubicación espacial"],a:1, exp:"Causa es por qué ocurre algo (el motivo) y el efecto es lo que ocurre (el resultado)."},
-        {level:"dificil",q:"La conclusión generalmente se ubica en:",o:["El inicio","El desarrollo","El final","El título"],a:2, exp:"La conclusión es el cierre del texto, donde se hace un resumen de las ideas principales o se da un veredicto final, siempre va al final."}
+    lectura: [
+        {q: "¿Qué caracteriza a un texto científico de divulgación?", o: ["Uso de lenguaje muy técnico", "Busca que el público general entienda", "Es una opinión personal", "Es un poema"], a: 1, exp: "La divulgación traduce temas complejos para que cualquier persona los comprenda."},
+        {q: "Identifica la metáfora:", o: ["Tus ojos son como el mar", "Las perlas de tu boca", "Corre tan rápido como el viento", "El perro ladra"], a: 1, exp: "'Las perlas de tu boca' sustituye dientes por perlas sin usar 'como' (eso sería símil)."},
+        {q: "¿En qué parte de una noticia se resume lo más importante?", o: ["Cuerpo", "Lead o Entradilla", "Cierre", "Pie de foto"], a: 1, exp: "El primer párrafo o entradilla responde a las preguntas básicas (quién, qué, dónde...)."}
     ],
-    redaccion:[
-        {level:"facil",q:"¿Cuál oración está bien escrita?",o:["El niño comio","El niño comió","El niño comío","El niño comiò"],a:1, exp:"'Comió' es una palabra aguda terminada en vocal, por lo tanto debe llevar tilde (acento ortográfico) en la última sílaba (ó)."},
-        {level:"facil",q:"Uso correcto para preguntar:",o:["Porque no vienes?","¿Por qué no vienes?","Porqué no vienes?","Por que no vienes?"],a:1, exp:"Para hacer una pregunta, se usa 'Por qué' (separado y con tilde en la e). Además, en español se usan los dos signos de interrogación (¿?)."},
-        {level:"media",q:"Concordancia correcta:",o:["Las perro corre","Los perros corren","El perros corre","La perros corren"],a:1, exp:"El artículo, el sustantivo y el verbo deben coincidir en género (masculino) y número (plural). 'Los perros corren' es la única correcta."},
-        {level:"media",q:"Uso correcto de la coma:",o:["Hola Juan como estas","Hola, Juan, ¿cómo estás?","Hola Juan, como estas","Hola, Juan como estas"],a:1, exp:"Se debe usar una coma para separar el 'vocativo' (el nombre de la persona a la que le hablamos). 'Hola, Juan' es lo correcto."},
-        {level:"dificil",q:"Identifica la palabra esdrújula:",o:["Cantar","Camión","Lápiz","Árboles"],a:3, exp:"Las esdrújulas tienen la sílaba tónica en la antepenúltima sílaba (ÁR-bo-les). Lápiz es llana, Camión es aguda y Cantar es aguda."},
-        {level:"dificil",q:"Acentuación correcta:",o:["Rapído","Rápido","Rapido","Rapiído"],a:1, exp:"'Rápido' es una palabra esdrújula (RÁ-pi-do). Todas las palabras esdrújulas llevan tilde siempre."}
+    redaccion: [
+        {q: "Palabra con error ortográfico:", o: ["Halla (encontrar)", "Haya (haber)", "Halla (árbol)", "Allá (lugar)"], a: 2, exp: "El árbol es 'Haya'. 'Halla' con doble 'l' es del verbo hallar."},
+        {q: "Uso de puntos suspensivos correcto:", o: ["Para dudar...", "Al final de cada frase...", "En vez de coma...", "No existen"], a: 0, exp: "Se usan para indicar suspenso, duda o una enumeración incompleta."},
+        {q: "Concordancia: 'El grupo de manifestantes ___ la calle'.", o: ["bloqueó", "bloquearon", "bloqueas", "bloquear"], a: 0, exp: "Sujeto colectivo singular (El grupo) requiere verbo en singular (bloqueó)."}
     ]
 };
 
-function startExam(subject){
-    currentSubject = subject;
-    questionIndex = 0;
-    correctCount = 0;
-    userAnswers = [];
+// --- LÓGICA DEL SIMULADOR ---
+let currentQuestions = [];
+let idx = 0;
+let score = 0;
+let state = "asking"; // asking, feedback
 
-    // Mezclamos TODAS las preguntas del banco
-    let allQuestions = shuffle([...bank[subject]]);
-    
-    // Si el banco tiene más preguntas que totalQuestionsForExam (5), toma solo 5.
-    // Así en cada intento las preguntas serán diferentes.
-    let limit = Math.min(totalQuestionsForExam, allQuestions.length); 
-    selectedQuestions = allQuestions.slice(0, limit);
-
-    document.getElementById("subjects").classList.add("hidden");
-    document.getElementById("exam").classList.remove("hidden");
-    document.getElementById("results").classList.add("hidden");
-
-    let titles = {
-        mate: "Pensamiento Matemático",
-        lectura: "Comprensión Lectora",
-        redaccion: "Redacción Indirecta"
-    };
-
-    document.getElementById("title").innerText = titles[subject];
-    showQuestion();
+function initQuiz(subject) {
+    currentQuestions = shuffle([...bank[subject]]).slice(0, 10);
+    idx = 0; score = 0;
+    document.getElementById("home-screen").classList.add("hidden");
+    document.getElementById("quiz-screen").classList.remove("hidden");
+    renderQuestion();
 }
 
-function showQuestion(){
-    document.getElementById("progressText").innerText = `Pregunta ${questionIndex + 1} de ${selectedQuestions.length}`;
+function renderQuestion() {
+    state = "asking";
+    const q = currentQuestions[idx];
+    document.getElementById("question-text").innerText = q.q;
+    document.getElementById("feedback-box").style.display = "none";
+    document.getElementById("action-btn").innerText = "Confirmar respuesta";
     
-    let q = selectedQuestions[questionIndex];
-    document.getElementById("questionBox").innerHTML = `
-        <div class="question">
-            <p>${q.q}</p>
-            ${q.o.map((opt, i) =>
-                `<label class="option-label">
-                    <input type="radio" name="option" value="${i}"> ${opt}
-                </label>`
-            ).join("")}
-        </div>`;
-}
-
-function nextQuestion(){
-    let selected = document.querySelector('input[name="option"]:checked');
-    if(!selected){
-        alert("Por favor, selecciona una respuesta antes de continuar.");
-        return;
-    }
-
-    let val = parseInt(selected.value);
-    userAnswers.push(val);
-
-    if(val === selectedQuestions[questionIndex].a){
-        correctCount++;
-    }
-
-    questionIndex++;
-
-    if(questionIndex < selectedQuestions.length){
-        showQuestion();
-    } else {
-        finishExam();
-    }
-}
-
-function finishExam(){
-    document.getElementById("exam").classList.add("hidden");
-    let div = document.getElementById("results");
-    div.classList.remove("hidden");
-
-    let isPerfect = correctCount === selectedQuestions.length;
+    const container = document.getElementById("options-container");
+    container.innerHTML = "";
     
-    let resultHTML = `<h2>Resultado Final</h2>
-                      <p>Respuestas correctas: <strong>${correctCount} de ${selectedQuestions.length}</strong></p>`;
-
-    if(isPerfect){
-        streak++;
-        day++;
-        localStorage.setItem("streak", streak);
-        localStorage.setItem("day", day);
-        resultHTML += `<h3 class="correct">¡Excelente trabajo! Subes de nivel de racha 🔥</h3>`;
-    } else {
-        streak = 0;
-        localStorage.setItem("streak", streak);
-        resultHTML += `<h3 class="incorrect">Fallaste algunas. ¡La racha vuelve a cero! 💔</h3>
-                       <p>Revisa las explicaciones abajo e intenta de nuevo para pasar el día.</p>`;
-    }
-
-    document.getElementById("day").innerText = day;
-    document.getElementById("streak").innerText = streak;
-
-    resultHTML += `<h3>Revisión de tu examen:</h3><div style="max-height: 500px; overflow-y: auto; padding-right: 10px;">`;
-
-    selectedQuestions.forEach((q, i) => {
-        let isCorrect = userAnswers[i] === q.a;
-        let statusClass = isCorrect ? "ok" : "fail";
-        let statusText = isCorrect ? `<span class="correct">✔ Correcta</span>` : `<span class="incorrect">✖ Incorrecta</span>`;
-        
-        resultHTML += `
-            <div class="review-item ${statusClass}">
-                <p><strong>Pregunta ${i+1}:</strong> ${q.q}</p>
-                <p>${statusText}</p>
-                ${!isCorrect ? `
-                    <p style="color:#666; font-size:0.9em;">
-                    Tu respuesta: ${q.o[userAnswers[i]]}<br>
-                    <strong>Respuesta correcta: ${q.o[q.a]}</strong>
-                    </p>
-                ` : ''}
-                <div class="explanation"><strong>Explicación:</strong> ${q.exp}</div>
-            </div>`;
+    q.o.forEach((opt, i) => {
+        const label = document.createElement("label");
+        label.className = "option-item";
+        label.innerHTML = `<input type="radio" name="quiz" value="${i}"> ${opt}`;
+        label.onclick = () => {
+            if(state === "asking") {
+                document.querySelectorAll('.option-item').forEach(el => el.style.borderColor = '#e2e8f0');
+                label.style.borderColor = 'var(--primary)';
+            }
+        };
+        container.appendChild(label);
     });
 
-    resultHTML += `</div><br><button onclick="location.reload()">Volver al Menú Principal</button>`;
-    div.innerHTML = resultHTML;
+    // Barra de progreso
+    document.getElementById("progress-bar").style.width = `${(idx / currentQuestions.length) * 100}%`;
 }
 
-function shuffle(array){
-    for(let i = array.length - 1; i > 0; i--){
-        let j = Math.floor(Math.random() * (i + 1));
+function handleAction() {
+    if (state === "asking") {
+        const selected = document.querySelector('input[name="quiz"]:checked');
+        if (!selected) return alert("Selecciona una opción");
+
+        const ans = parseInt(selected.value);
+        const correct = currentQuestions[idx].a;
+        const options = document.querySelectorAll('.option-item');
+
+        state = "feedback";
+        if (ans === correct) {
+            score++;
+            options[ans].classList.add("correct-opt");
+        } else {
+            options[ans].classList.add("incorrect-opt");
+            options[correct].classList.add("correct-opt");
+        }
+
+        const fb = document.getElementById("feedback-box");
+        fb.innerHTML = `<strong>Explicación:</strong> ${currentQuestions[idx].exp}`;
+        fb.style.display = "block";
+        document.getElementById("action-btn").innerText = "Siguiente pregunta";
+
+    } else {
+        idx++;
+        if (idx < currentQuestions.length) {
+            renderQuestion();
+        } else {
+            showResults();
+        }
+    }
+}
+
+function showResults() {
+    document.getElementById("quiz-screen").classList.add("hidden");
+    const screen = document.getElementById("result-screen");
+    screen.classList.remove("hidden");
+
+    const passed = score === currentQuestions.length;
+    
+    if(passed) {
+        let s = parseInt(localStorage.getItem("streak") || 0) + 1;
+        let d = parseInt(localStorage.getItem("day") || 1) + 1;
+        localStorage.setItem("streak", s);
+        localStorage.setItem("day", d);
+        document.getElementById("result-title").innerHTML = "¡PERFECTO! 🔥";
+        document.getElementById("result-title").className = "correct";
+    } else {
+        localStorage.setItem("streak", 0);
+        document.getElementById("result-title").innerHTML = "Necesitas repasar 📚";
+        document.getElementById("result-title").className = "incorrect";
+    }
+
+    document.getElementById("result-score").innerText = `Aciertos: ${score} de ${currentQuestions.length}`;
+    
+    // Actualizar UI de racha inmediatamente
+    document.getElementById("streak-val").innerText = localStorage.getItem("streak");
+    document.getElementById("day-val").innerText = localStorage.getItem("day");
+}
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
 }
+
+// Cargar datos iniciales
+document.getElementById("streak-val").innerText = streak;
+document.getElementById("day-val").innerText = day;
+
 </script>
 </body>
 </html>
